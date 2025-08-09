@@ -1,5 +1,6 @@
 const daemon = require("../daemon");
 const command = require("../command");
+const help = require("../help");
 
 module.exports = (...args) => {
 	return new Promise((resolve, reject) => {
@@ -25,6 +26,8 @@ module.exports = (...args) => {
 				command: getCommandProxy(),
 				client: client
 			};
+
+			prox.help = help(prox);
 
 			resolve(prox);
 		}).catch(reject);

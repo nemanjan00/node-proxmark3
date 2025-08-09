@@ -24,8 +24,6 @@ const command = (client, args) => {
 
 				client.on("command_end", endListener);
 
-				console.log(command);
-
 				client.emit("command", {
 					command
 				});
