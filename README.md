@@ -35,8 +35,16 @@ Provides a complete JavaScript API with **789 commands** across all Proxmark3 co
 
 ## Install
 
+As a library in your project:
+
 ```bash
 yarn add node-proxmark3
+```
+
+For MCP server use (global install, works from any project):
+
+```bash
+yarn global add node-proxmark3
 ```
 
 ## Prerequisites
@@ -284,18 +292,25 @@ pm3.data(clientPromise) → { plot, rawdemod, load, save, ... }
 
 ## MCP Server for AI-Assisted RFID Research
 
-The library includes an MCP server that lets AI assistants like Claude directly interact with your Proxmark3. The AI can identify cards, run attacks, read data, and guide you through complex operations.
+The library includes an MCP server that lets AI assistants like Claude directly interact with your Proxmark3. Install globally and use `pm3-mcp` from any project — no need to add it as a dependency to whatever you're working on.
 
-### Setup
+### Install
 
-Add to `.mcp.json` in your project (for Claude Code):
+```bash
+yarn global add node-proxmark3
+# or
+npm install -g node-proxmark3
+```
+
+### Setup with Claude Code
+
+Add to your `~/.claude/settings.json` (applies to all projects):
 
 ```json
 {
   "mcpServers": {
     "proxmark3": {
-      "command": "node",
-      "args": ["node_modules/node-proxmark3/src/mcp/index.js"],
+      "command": "pm3-mcp",
       "env": {
         "PM3": "/path/to/proxmark3"
       }
@@ -304,14 +319,31 @@ Add to `.mcp.json` in your project (for Claude Code):
 }
 ```
 
-Or for Claude Desktop, add to your config file:
+Or use `npx` without installing globally:
 
 ```json
 {
   "mcpServers": {
     "proxmark3": {
-      "command": "node",
-      "args": ["/absolute/path/to/node_modules/node-proxmark3/src/mcp/index.js"],
+      "command": "npx",
+      "args": ["-y", "node-proxmark3", "--mcp"],
+      "env": {
+        "PM3": "/path/to/proxmark3"
+      }
+    }
+  }
+}
+```
+
+### Setup with Claude Desktop
+
+Add to your Claude Desktop config:
+
+```json
+{
+  "mcpServers": {
+    "proxmark3": {
+      "command": "pm3-mcp",
       "env": {
         "PM3": "/path/to/proxmark3"
       }
@@ -322,13 +354,13 @@ Or for Claude Desktop, add to your config file:
 
 ### What You Can Do
 
-With the MCP server, you can ask Claude things like:
+With the MCP server connected, you can ask Claude things like:
 
-- *"What card is on the reader?"* — Claude runs `hf search` and `lf search`
-- *"Dump this MIFARE Classic card"* — Claude runs autopwn, then dump
-- *"Clone this card to a blank"* — Claude reads the card, identifies the type, and writes to a T55x7
-- *"Check the security of this access card"* — Claude runs appropriate key checks and attacks
-- *"What's the antenna tuning look like?"* — Claude runs `hw tune` and interprets results
+- *"What card is on the reader?"* — runs `hf search` and `lf search`
+- *"Dump this MIFARE Classic card"* — runs autopwn, then dump
+- *"Clone this card to a blank"* — reads the card, identifies the type, writes to T55x7
+- *"Check the security of this access card"* — runs key checks and attacks
+- *"What's the antenna tuning look like?"* — runs `hw tune` and interprets results
 
 Each MCP tool has rich descriptions with usage, options, and examples so the AI knows exactly what arguments to pass.
 
