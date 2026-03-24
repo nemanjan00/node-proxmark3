@@ -26,7 +26,7 @@ const clientPromise = createClient(pm3Path);
 
 const server = new McpServer({
 	name: "proxmark3",
-	version: "0.0.6"
+	version: "0.0.9"
 });
 
 const SKIP_COMMANDS = new Set([
@@ -34,27 +34,44 @@ const SKIP_COMMANDS = new Set([
 ]);
 
 /**
- * Build a rich tool description from commands-help.json data.
+ * Parse a flag string into a canonical name and metadata.
+ * e.g. "-k, --key <hex>" => { name: "key", flag: "--key", hasValue: true, valueType: "hex" }
+ *      "--q5"            => { name: "q5", flag: "--q5", hasValue: false }
+ *      "-0"              => { name: "0", flag: "-0", hasValue: false }
  */
-function buildToolDescription(toolKey, fallbackDesc) {
-	const help = helpData[toolKey];
+function parseFlag(flagStr) {
+	const valueMatch = flagStr.match(/<([^>]+)>/);
+	const hasValue = !!valueMatch;
+	const valueType = valueMatch ? valueMatch[1] : null;
+
+	const parts = flagStr.replace(/<[^>]+>/, "").trim().split(",").map(s => s.trim());
+	const longFlag = parts.find(p => p.startsWith("--"));
+	const shortFlag = parts.find(p => p.match(/^-[^-]/));
+
+	let flag, name;
+	if (longFlag) {
+		flag = longFlag.split(/\s/)[0];
+		name = flag.replace(/^--/, "");
+	} else if (shortFlag) {
+		flag = shortFlag.split(/\s/)[0];
+		name = flag.replace(/^-/, "");
+	} else {
+		return null;
+	}
+
+	// Clean name for use as zod key
+	name = name.replace(/[^a-zA-Z0-9_]/g, "_");
+
+	return { name, flag, hasValue, valueType };
+}
+
+/**
+ * Build a tool description string from help data.
+ */
+function buildDescription(help, fallbackDesc) {
 	if (!help) return fallbackDesc;
 
 	const parts = [help.description || fallbackDesc];
-
-	if (help.usage) {
-		parts.push("");
-		parts.push("Usage: " + help.usage);
-	}
-
-	if (help.options && help.options.length > 0) {
-		parts.push("");
-		parts.push("Options:");
-		for (const opt of help.options) {
-			const desc = opt.description ? " - " + opt.description : "";
-			parts.push("  " + opt.flag + desc);
-		}
-	}
 
 	if (help.examples && help.examples.length > 0) {
 		parts.push("");
@@ -65,6 +82,52 @@ function buildToolDescription(toolKey, fallbackDesc) {
 	}
 
 	return parts.join("\n");
+}
+
+/**
+ * Build a zod schema and arg builder from help options.
+ * Returns { schema, buildArgs } where buildArgs(params) => string[]
+ */
+function buildToolSchema(help) {
+	if (!help || !help.options || help.options.length === 0) {
+		return null;
+	}
+
+	const schema = {};
+	const paramDefs = [];
+
+	for (const opt of help.options) {
+		const parsed = parseFlag(opt.flag);
+		if (!parsed) continue;
+
+		const desc = opt.description || "";
+
+		if (parsed.hasValue) {
+			schema[parsed.name] = z.string().optional().describe(desc);
+		} else {
+			schema[parsed.name] = z.boolean().optional().describe(desc);
+		}
+
+		paramDefs.push(parsed);
+	}
+
+	if (Object.keys(schema).length === 0) return null;
+
+	const buildArgs = (params) => {
+		const args = [];
+		for (const def of paramDefs) {
+			const val = params[def.name];
+			if (val === undefined || val === null || val === false) continue;
+			if (def.hasValue) {
+				args.push(def.flag, String(val));
+			} else if (val === true) {
+				args.push(def.flag);
+			}
+		}
+		return args;
+	};
+
+	return { schema, buildArgs };
 }
 
 /**
@@ -92,19 +155,36 @@ for (const leaf of leaves) {
 	if (SKIP_COMMANDS.has(lastSegment)) continue;
 	if (toolName === "lf_search") continue;
 
-	const description = buildToolDescription(toolName, leaf.description);
+	const help = helpData[toolName];
+	const description = buildDescription(help, leaf.description);
+	const toolSchema = buildToolSchema(help);
 
-	server.tool(
-		toolName,
-		description,
-		{ args: z.string().optional().describe("Additional arguments for the command") },
-		async ({ args }) => {
-			const client = await clientPromise;
-			const extraArgs = args ? args.split(" ") : [];
-			const result = await command(client.client, leaf.path)(extraArgs);
-			return { content: [{ type: "text", text: result }] };
-		}
-	);
+	if (toolSchema) {
+		// Tool with structured parameters
+		server.tool(
+			toolName,
+			description,
+			toolSchema.schema,
+			async (params) => {
+				const client = await clientPromise;
+				const args = toolSchema.buildArgs(params);
+				const result = await command(client.client, leaf.path)(args);
+				return { content: [{ type: "text", text: result }] };
+			}
+		);
+	} else {
+		// No-arg tool
+		server.tool(
+			toolName,
+			description,
+			{},
+			async () => {
+				const client = await clientPromise;
+				const result = await command(client.client, leaf.path)([]);
+				return { content: [{ type: "text", text: result }] };
+			}
+		);
+	}
 }
 
 // Manual tools
