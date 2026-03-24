@@ -143,9 +143,11 @@ function updateStatus() {
 		: "{red-fg}●{/red-fg} Offline";
 	const run = running ? "  {yellow-fg}⟳ Running{/yellow-fg}" : "";
 	const path = selectedPath.length > 0 ? "  │  " + selectedPath.join(" ") : "";
-	statusBar.setContent(
-		` ${conn}${run}${path}  │  {gray-fg}Enter:exec  /:input  Tab:switch  q:quit{/gray-fg}`
-	);
+	const inputFocused = screen.focused === inputBar;
+	const hint = inputFocused
+		? "{gray-fg}Enter:execute  Esc:cancel{/gray-fg}"
+		: "{gray-fg}Enter:command  /:input  Tab:switch  q:quit{/gray-fg}";
+	statusBar.setContent(` ${conn}${run}${path}  │  ${hint}`);
 	screen.render();
 }
 
@@ -297,7 +299,11 @@ tree.on("select", function (node) {
 	}
 
 	if (cmdNode && !cmdNode.children) {
-		executeCommand(path, []);
+		// Open input bar pre-filled with the command, ready for args
+		const cmdStr = path.join(" ") + " ";
+		inputBar.setValue(cmdStr);
+		inputBar.focus();
+		screen.render();
 	}
 });
 
@@ -346,6 +352,14 @@ async function executeCommand(cmdPath, args) {
 }
 
 // ── Input bar ──────────────────────────────────────────────────
+
+inputBar.on("focus", function () {
+	updateStatus();
+});
+
+inputBar.on("blur", function () {
+	updateStatus();
+});
 
 inputBar.on("submit", function (value) {
 	const parts = value.trim().split(/\s+/);
