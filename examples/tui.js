@@ -396,6 +396,29 @@ function showParameterForm(cmdPath) {
 				},
 			});
 
+			// Intercept Tab/Escape before readline consumes them
+			input.on("keypress", function (ch, key) {
+				if (key.name === "tab") {
+					input.cancel();
+					if (key.shift) {
+						focusFormField(formFocusTargets.indexOf(input) - 1);
+					} else {
+						focusFormField(formFocusTargets.indexOf(input) + 1);
+					}
+					return false;
+				}
+				if (key.name === "escape") {
+					input.cancel();
+					cancelForm();
+					return false;
+				}
+			});
+
+			// Enter submits the form
+			input.on("submit", function () {
+				submitForm();
+			});
+
 			formFocusTargets.push(input);
 			formParams.push({ flag: p.flag, hasValue: true, widget: input });
 		} else {
