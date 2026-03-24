@@ -1,6 +1,7 @@
-const client = require("../").client;
+const client = require("../client");
 
 const em = require("./em");
+const createCommands = require("./commands");
 
 const typeMap = {
 	"EM410x": em["410x"]
@@ -69,7 +70,10 @@ module.exports = clientPromise => {
 					}).catch(reject);
 				});
 			});
-		}
+		},
+
+		// Merge in all auto-generated LF sub-command stubs
+		...createCommands(clientPromise)
 	};
 
 	return lf;

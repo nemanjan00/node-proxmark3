@@ -7,8 +7,13 @@
   "author": "nemanjan00 <nemanjan00@gmail.com>",
   "license": "MIT",
   "private": false,
+  "bin": {
+    "pm3-mcp": "./src/mcp/index.js"
+  },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "blessed": "^0.1.81",
-    "blessed-contrib": "^4.11.0"
+    "blessed-contrib": "^4.11.0",
+    "zod": "^4.3.6"
   }
 }

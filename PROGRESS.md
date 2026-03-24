@@ -1,0 +1,618 @@
+# Command Implementation Progress
+
+All 571 commands implemented with JSDoc and smart parameters.
+
+
+## prefs (15 commands)
+
+- [x] `prefs get barmode` - Get bar mode preference
+- [x] `prefs get clientdebug` - Get client debug level preference
+- [x] `prefs get clientdelay` - Get client execution delay preference
+- [x] `prefs get color` - Get color support preference
+- [x] `prefs get savepaths` - Get file folder
+- [x] `prefs get emoji` - Get emoji display preference
+- [x] `prefs get plotsliders` - Get plot slider display preference
+- [x] `prefs set barmode` - Set bar mode
+- [x] `prefs set clientdebug` - Set client debug level
+- [x] `prefs set clientdelay` - Set client execution delay
+- [x] `prefs set color` - Set color support
+- [x] `prefs set emoji` - Set emoji display
+- [x] `prefs set savepaths` - ... to be adjusted next ...
+- [x] `prefs set plotsliders` - Set plot slider display
+- [x] `prefs show` - Show all preferences
+
+## analyse (12 commands)
+
+- [x] `analyse lcr` - Generate final byte for XOR LRC
+- [x] `analyse crc` - Stub method for CRC evaluations
+- [x] `analyse chksum` - Checksum with adding, masking and one's complement
+- [x] `analyse dates` - Look for datestamps in a given array of bytes
+- [x] `analyse tea` - Crypto TEA test
+- [x] `analyse lfsr` - LFSR tests
+- [x] `analyse a` - num bits test
+- [x] `analyse nuid` - create NUID from 7byte UID
+- [x] `analyse demodbuff` - Load binary string to demodbuffer
+- [x] `analyse freq` - Calc wave lengths
+- [x] `analyse foo` - muxer
+- [x] `analyse units` - convert ETU <> US <> SSP_CLK (3.39MHz)
+
+## data (37 commands)
+
+- [x] `data biphaserawdecode` - Biphase decode bin stream in DemodBuffer
+- [x] `data detectclock` - Detect ASK, FSK, NRZ, PSK clock rate of wave in GraphBuffer
+- [x] `data fsktonrz` - Convert fsk2 to nrz wave for alternate fsk demodulating (for weak fsk)
+- [x] `data manrawdecode` - Manchester decode binary stream in DemodBuffer
+- [x] `data modulation` - Identify LF signal for clock and modulation
+- [x] `data rawdemod` - Demodulate the data in the GraphBuffer and output binary
+- [x] `data askedgedetect` - Adjust Graph for manual ASK demod using the length of sample differences to detect the edge of a wave
+- [x] `data autocorr` - Autocorrelation over window
+- [x] `data dirthreshold` - Max rising higher up-thres/ Min falling lower down-thres, keep rest as prev.
+- [x] `data decimate` - Decimate samples
+- [x] `data undecimate` - Un-decimate samples
+- [x] `data hide` - Hide graph window
+- [x] `data hpf` - Remove DC offset from trace
+- [x] `data iir` - Apply IIR buttersworth filter on plot data
+- [x] `data grid` - overlay grid on graph window
+- [x] `data ltrim` - Trim samples from left of trace
+- [x] `data mtrim` - Trim out samples from the specified start to the specified stop
+- [x] `data norm` - Normalize max/min to +/-128
+- [x] `data plot` - Show graph window
+- [x] `data rtrim` - Trim samples from right of trace
+- [x] `data setgraphmarkers` - Set blue and orange marker in graph window
+- [x] `data shiftgraphzero` - Shift 0 for Graphed wave + or - shift value
+- [x] `data timescale` - Set a timescale to get a differential reading between the yellow and purple markers as time duration
+- [x] `data zerocrossings` - Count time between zero-crossings
+- [x] `data convertbitstream` - Convert GraphBuffer's 0/1 values to 127 / -127
+- [x] `data getbitstream` - Convert GraphBuffer's >=1 values to 1 and <1 to 0
+- [x] `data asn1` - asn1 decoder
+- [x] `data bin2hex` - Converts binary to hexadecimal
+- [x] `data bitsamples` - Get raw samples as bitstring
+- [x] `data hexsamples` - Dump big buffer as hex bytes
+- [x] `data hex2bin` - Converts hexadecimal to binary
+- [x] `data load` - Load contents of file into graph window
+- [x] `data print` - Print the data in the DemodBuffer
+- [x] `data samples` - Get raw samples for graph window (GraphBuffer)
+- [x] `data save` - Save signal trace data (from graph window)
+- [x] `data setdebugmode` - Set Debugging Level on client side
+- [x] `data tune` - Measure tuning of device antenna. Results shown in graph window
+
+## emv (13 commands)
+
+- [x] `emv exec` - Executes EMV contactless transaction.
+- [x] `emv pse` - Execute PPSE. It selects 2PAY.SYS.DDF01 or 1PAY.SYS.DDF01 directory.
+- [x] `emv search` - Try to select all applets from applets list and print installed applets.
+- [x] `emv select` - Select applet.
+- [x] `emv gpo` - Execute GetProcessingOptions.
+- [x] `emv readrec` - Read files from card.
+- [x] `emv genac` - Generate ApplicationCryptogram.
+- [x] `emv challenge` - Generate challenge.
+- [x] `emv intauth` - Internal authentication.
+- [x] `emv scan` - Scan EMV card and save it contents to json file for emulator.
+- [x] `emv test` - Crypto logic test.
+- [x] `emv list` - List ISO7816 history
+- [x] `emv roca` - Extract public keys and run ROCA test
+
+## hf (252 commands)
+
+- [x] `hf 15 list` - List ISO-15693 history
+- [x] `hf 15 demod` - Demodulate ISO-15693 from tag
+- [x] `hf 15 dump` - Read all memory pages of an ISO-15693 tag, save to file
+- [x] `hf 15 info` - Tag information
+- [x] `hf 15 sniff` - Sniff ISO-15693 traffic
+- [x] `hf 15 raw` - Send raw hex data to tag
+- [x] `hf 15 rdbl` - Read a block
+- [x] `hf 15 rdmulti` - Reads multiple blocks
+- [x] `hf 15 reader` - Act like an ISO-15693 reader
+- [x] `hf 15 restore` - Restore from file to all memory pages of an ISO-15693 tag
+- [x] `hf 15 samples` - Acquire samples as reader (enables carrier, sends inquiry)
+- [x] `hf 15 sim` - Fake an ISO-15693 tag
+- [x] `hf 15 slixdisable` - Disable privacy mode on SLIX ISO-15693 tag
+- [x] `hf 15 wrbl` - Write a block
+- [x] `hf 15 findafi` - Brute force AFI of an ISO-15693 tag
+- [x] `hf 15 writeafi` - Writes the AFI on an ISO-15693 tag
+- [x] `hf 15 writedsfid` - Writes the DSFID on an ISO-15693 tag
+- [x] `hf 15 csetuid` - Set UID for magic card
+- [x] `hf 14a list` - List ISO 14443-a history
+- [x] `hf 14a info` - Tag information
+- [x] `hf 14a reader` - Act like an ISO14443-a reader
+- [x] `hf 14a ndefread` - Read an NDEF file from ISO 14443-A Type 4 tag
+- [x] `hf 14a cuids` - Collect n>0 ISO14443-a UIDs in one go
+- [x] `hf 14a sim` - Simulate ISO 14443-a tag
+- [x] `hf 14a sniff` - sniff ISO 14443-a traffic
+- [x] `hf 14a apdu` - Send ISO 14443-4 APDU to tag
+- [x] `hf 14a chaining` - Control ISO 14443-4 input chaining
+- [x] `hf 14a raw` - Send raw hex data to tag
+- [x] `hf 14a antifuzz` - Fuzzing the anticollision phase. Warning! Readers may react strange
+- [x] `hf 14a config` - Configure 14a settings (use with caution)
+- [x] `hf 14a apdufind` - Enumerate APDUs - CLA/INS/P1P2
+- [x] `hf 14b apdu` - Send ISO 14443-4 APDU to tag
+- [x] `hf 14b dump` - Read all memory pages of an ISO-14443-B tag, save to file
+- [x] `hf 14b info` - Tag information
+- [x] `hf 14b list` - List ISO-14443-B history
+- [x] `hf 14b ndefread` - Read NDEF file on tag
+- [x] `hf 14b raw` - Send raw hex data to tag
+- [x] `hf 14b reader` - Act as a ISO-14443-B reader to identify a tag
+- [x] `hf 14b sim` - Fake ISO ISO-14443-B tag
+- [x] `hf 14b sniff` - Eavesdrop ISO-14443-B
+- [x] `hf 14b rdbl` - Read SRI512/SRIX4x block
+- [x] `hf 14b sriwrite` - Write data to a SRI512 or SRIX4K tag
+- [x] `hf cipurse info` - Get info about CIPURSE tag
+- [x] `hf cipurse auth` - Authenticate CIPURSE tag
+- [x] `hf cipurse read` - Read binary file
+- [x] `hf cipurse write` - Write binary file
+- [x] `hf cipurse aread` - Read file attributes
+- [x] `hf cipurse delete` - Delete file
+- [x] `hf cipurse default` - Set default key and file id for all the other commands
+- [x] `hf cipurse test` - Tests
+- [x] `hf epa cnonces` - Acquire encrypted PACE nonces of specific size
+- [x] `hf epa preplay` - Perform PACE protocol by replaying given APDUs
+- [x] `hf emrtd dump` - Dump eMRTD files to binary files
+- [x] `hf emrtd info` - Display info about an eMRTD
+- [x] `hf emrtd list` - List ISO 14443A/7816 history
+- [x] `hf felica list` - List ISO 18092/FeliCa history
+- [x] `hf felica reader` - Act like an ISO18092/FeliCa reader
+- [x] `hf felica info` - Tag information
+- [x] `hf felica sniff` - Sniff ISO 18092/FeliCa traffic
+- [x] `hf felica raw` - Send raw hex data to tag
+- [x] `hf felica rdbl` - read block data from authentication-not-required Service.
+- [x] `hf felica wrbl` - write block data to an authentication-not-required Service.
+- [x] `hf felica rqservice` - verify the existence of Area and Service, and to acquire Key Version.
+- [x] `hf felica rqresponse` - verify the existence of a card and its Mode.
+- [x] `hf felica scsvcode` - acquire Area Code and Service Code.
+- [x] `hf felica rqsyscode` - acquire System Code registered to the card.
+- [x] `hf felica auth1` - authenticate a card. Start mutual authentication with Auth1
+- [x] `hf felica auth2` - allow a card to authenticate a Reader/Writer. Complete mutual authentication
+- [x] `hf felica rqspecver` - acquire the version of card OS.
+- [x] `hf felica resetmode` - reset Mode to Mode 0.
+- [x] `hf felica litesim` - Emulating ISO/18092 FeliCa Lite tag
+- [x] `hf felica litedump` - Wait for and try dumping FelicaLite
+- [x] `hf fido list` - List ISO 14443A history
+- [x] `hf fido info` - Info about FIDO tag.
+- [x] `hf fido reg` - FIDO U2F Registration Message.
+- [x] `hf fido auth` - FIDO U2F Authentication Message.
+- [x] `hf fido make` - FIDO2 MakeCredential command.
+- [x] `hf fido assert` - FIDO2 GetAssertion command.
+- [x] `hf jooki clone` - Write a Jooki token
+- [x] `hf jooki decode` - Decode Jooki token
+- [x] `hf jooki encode` - Encode Jooki token
+- [x] `hf jooki sim` - Simulate Jooki token
+- [x] `hf iclass dump` - Dump Picopass / iCLASS tag to file
+- [x] `hf iclass info` - Tag information
+- [x] `hf iclass list` - List iclass history
+- [x] `hf iclass rdbl` - Read Picopass / iCLASS block
+- [x] `hf iclass reader` - Act like an Picopass / iCLASS reader
+- [x] `hf iclass restore` - Restore a dump file onto a Picopass / iCLASS tag
+- [x] `hf iclass sniff` - Eavesdrop Picopass / iCLASS communication
+- [x] `hf iclass wrbl` - Write Picopass / iCLASS block
+- [x] `hf iclass chk` - Check keys
+- [x] `hf iclass loclass` - Use loclass to perform bruteforce reader attack
+- [x] `hf iclass lookup` - Uses authentication trace to check for key in dictionary file
+- [x] `hf iclass sim` - Simulate iCLASS tag
+- [x] `hf iclass eload` - Load Picopass / iCLASS dump file into emulator memory
+- [x] `hf iclass esave` - Save emulator memory to file
+- [x] `hf iclass eview` - View emulator memory
+- [x] `hf iclass configcard` - Reader configuration card
+- [x] `hf iclass calcnewkey` - Calc diversified keys (blocks 3 & 4) to write new keys
+- [x] `hf iclass encode` - Encode binary wiegand to block 7
+- [x] `hf iclass encrypt` - Encrypt given block data
+- [x] `hf iclass decrypt` - Decrypt given block data or tag dump file
+- [x] `hf iclass managekeys` - Manage keys to use with iclass commands
+- [x] `hf iclass permutekey` - Permute function from 'heart of darkness' paper
+- [x] `hf iclass view` - Display content from tag dump file
+- [x] `hf legic list` - List LEGIC history
+- [x] `hf legic reader` - LEGIC Prime Reader UID and tag info
+- [x] `hf legic info` - Display deobfuscated and decoded LEGIC Prime tag data
+- [x] `hf legic dump` - Dump LEGIC Prime tag to binary file
+- [x] `hf legic restore` - Restore a dump file onto a LEGIC Prime tag
+- [x] `hf legic rdbl` - Read bytes from a LEGIC Prime tag
+- [x] `hf legic sim` - Start tag simulator
+- [x] `hf legic wrbl` - Write data to a LEGIC Prime tag
+- [x] `hf legic crc` - Calculate Legic CRC over given bytes
+- [x] `hf legic eload` - Load binary dump to emulator memory
+- [x] `hf legic esave` - Save emulator memory to binary file
+- [x] `hf legic wipe` - Wipe a LEGIC Prime tag
+- [x] `hf lto dump` - Dump LTO-CM tag to file
+- [x] `hf lto restore` - Restore dump file to LTO-CM tag
+- [x] `hf lto info` - Tag information
+- [x] `hf lto rdbl` - Read block
+- [x] `hf lto wrbl` - Write block
+- [x] `hf lto list` - List LTO-CM history
+- [x] `hf mf list` - List MIFARE history
+- [x] `hf mf darkside` - Darkside attack
+- [x] `hf mf nested` - Nested attack
+- [x] `hf mf hardnested` - Nested attack for hardened MIFARE Classic cards
+- [x] `hf mf staticnested` - Nested attack against static nonce MIFARE Classic cards
+- [x] `hf mf autopwn` - Automatic key recovery tool for MIFARE Classic
+- [x] `hf mf nack` - Test for MIFARE NACK bug
+- [x] `hf mf chk` - Check keys
+- [x] `hf mf fchk` - Check keys fast, targets all keys on card
+- [x] `hf mf decrypt` - [nt] [ar_enc] [at_enc] [data] - to decrypt sniff or trace
+- [x] `hf mf supercard` - Extract info from a `super card`
+- [x] `hf mf auth4` - ISO14443-4 AES authentication
+- [x] `hf mf dump` - Dump MIFARE Classic tag to binary file
+- [x] `hf mf mad` - Checks and prints MAD
+- [x] `hf mf ndefread` - Prints NDEF records from card
+- [x] `hf mf personalize` - Personalize UID (MIFARE Classic EV1 only)
+- [x] `hf mf rdbl` - Read MIFARE Classic block
+- [x] `hf mf rdsc` - Read MIFARE Classic sector
+- [x] `hf mf restore` - Restore MIFARE Classic binary file to BLANK tag
+- [x] `hf mf setmod` - Set MIFARE Classic EV1 load modulation strength
+- [x] `hf mf view` - Display content from tag dump file
+- [x] `hf mf wipe` - Wipe card to zeros and default keys/acc
+- [x] `hf mf wrbl` - Write MIFARE Classic block
+- [x] `hf mf sim` - Simulate MIFARE card
+- [x] `hf mf ecfill` - Fill emulator memory with help of keys from emulator
+- [x] `hf mf eclr` - Clear emulator memory
+- [x] `hf mf egetblk` - Get emulator memory block
+- [x] `hf mf egetsc` - Get emulator memory sector
+- [x] `hf mf ekeyprn` - Print keys from emulator memory
+- [x] `hf mf eload` - Load from file emul dump
+- [x] `hf mf esave` - Save to file emul dump
+- [x] `hf mf esetblk` - Set emulator memory block
+- [x] `hf mf eview` - View emulator memory
+- [x] `hf mf cgetblk` - Read block from card
+- [x] `hf mf cgetsc` - Read sector from card
+- [x] `hf mf cload` - Load dump to card
+- [x] `hf mf csave` - Save dump from card into file or emulator
+- [x] `hf mf csetblk` - Write block to card
+- [x] `hf mf csetuid` - Set UID on card
+- [x] `hf mf cview` - View card
+- [x] `hf mf cwipe` - Wipe card to default UID/Sectors/Keys
+- [x] `hf mf gen3uid` - Set UID without changing manufacturer block
+- [x] `hf mf gen3blk` - Overwrite manufacturer block
+- [x] `hf mf gen3freeze` - Perma lock UID changes. irreversible
+- [x] `hf mf gview` - View card
+- [x] `hf mfp info` - Info about Mifare Plus tag
+- [x] `hf mfp wrp` - Write Perso command
+- [x] `hf mfp initp` - Fills all the card's keys
+- [x] `hf mfp commitp` - Move card to SL1 or SL3 mode
+- [x] `hf mfp auth` - Authentication
+- [x] `hf mfp rdbl` - Read blocks
+- [x] `hf mfp rdsc` - Read sectors
+- [x] `hf mfp wrbl` - Write blocks
+- [x] `hf mfp chk` - Check keys
+- [x] `hf mfp mad` - Checks and prints MAD
+- [x] `hf mfp ndefread` - Prints NDEF records from card
+- [x] `hf mfu keygen` - Generate 3DES MIFARE diversified keys
+- [x] `hf mfu pwdgen` - Generate pwd from known algos
+- [x] `hf mfu otptear` - Tear-off test on OTP bits
+- [x] `hf mfu cauth` - Authentication - Ultralight-C
+- [x] `hf mfu dump` - Dump MIFARE Ultralight family tag to binary file
+- [x] `hf mfu info` - Tag information
+- [x] `hf mfu ndefread` - Prints NDEF records from card
+- [x] `hf mfu rdbl` - Read block
+- [x] `hf mfu restore` - Restore a dump onto a MFU MAGIC tag
+- [x] `hf mfu wrbl` - Write block
+- [x] `hf mfu eload` - load Ultralight .eml dump file into emulator memory
+- [x] `hf mfu eview` - View emulator memory
+- [x] `hf mfu sim` - Simulate MIFARE Ultralight from emulator memory
+- [x] `hf mfu setpwd` - Set 3DES key - Ultralight-C
+- [x] `hf mfu setuid` - Set UID - MAGIC tags only
+- [x] `hf mfdes default` - [new]Set defaults for all the commands
+- [x] `hf mfdes auth` - Tries a MIFARE DesFire Authentication
+- [x] `hf mfdes chk` - Check keys
+- [x] `hf mfdes enum` - Tries enumerate all applications
+- [x] `hf mfdes formatpicc` - [new]Format PICC
+- [x] `hf mfdes freemem` - [new]Get free memory size
+- [x] `hf mfdes getuid` - [new]Get uid from card
+- [x] `hf mfdes setconfig` - [new]Set card configuration
+- [x] `hf mfdes info` - Tag information
+- [x] `hf mfdes list` - List DESFire (ISO 14443A) history
+- [x] `hf mfdes changekey` - [new]Change Key
+- [x] `hf mfdes chkeysettings` - [new]Change Key Settings
+- [x] `hf mfdes getkeysettings` - [new]Get Key Settings
+- [x] `hf mfdes getkeyversions` - [new]Get Key Versions
+- [x] `hf mfdes bruteaid` - Recover AIDs by bruteforce
+- [x] `hf mfdes createapp` - [new]Create Application
+- [x] `hf mfdes deleteapp` - [new]Delete Application
+- [x] `hf mfdes selectaid` - Select Application ID
+- [x] `hf mfdes getaids` - [new]Get Application IDs list
+- [x] `hf mfdes getappnames` - [new]Get Applications list
+- [x] `hf mfdes getfileids` - [new]Get File IDs list
+- [x] `hf mfdes getfileisoids` - [new]Get File ISO IDs list
+- [x] `hf mfdes createfile` - [new]Create Standard/Backup File
+- [x] `hf mfdes createvaluefile` - [new]Create Value File
+- [x] `hf mfdes createrecordfile` - [new]Create Linear/Cyclic Record File
+- [x] `hf mfdes createmacfile` - [new]Create Transaction MAC File
+- [x] `hf mfdes deletefile` - [new]Delete File
+- [x] `hf mfdes getfilesettings` - [new]Get file settings
+- [x] `hf mfdes chfilesettings` - [new]Change file settings
+- [x] `hf mfdes dump` - Dump all files
+- [x] `hf mfdes read` - [new]Read data from standard/backup/record/value/mac file
+- [x] `hf mfdes write` - [new]Write data to standard/backup/record/value file
+- [x] `hf mfdes value` - [new]Operations with value file (get/credit/limited credit/debit/clear)
+- [x] `hf mfdes clearrecfile` - [new]Clear record File
+- [x] `hf mfdes test` - Test crypto
+- [x] `hf seos info` - Tag information
+- [x] `hf seos list` - List SEOS history
+- [x] `hf st25ta info` - Tag information
+- [x] `hf st25ta list` - List ISO 14443A/7816 history
+- [x] `hf st25ta ndefread` - read NDEF file on tag
+- [x] `hf st25ta protect` - change protection on tag
+- [x] `hf st25ta pwd` - change password on tag
+- [x] `hf st25ta sim` - Fake ISO 14443A/ST tag
+- [x] `hf thinfilm info` - Tag information
+- [x] `hf thinfilm list` - List NFC Barcode / Thinfilm history - not correct
+- [x] `hf thinfilm sim` - Fake Thinfilm tag
+- [x] `hf topaz list` - List Topaz history
+- [x] `hf topaz info` - Tag information
+- [x] `hf topaz reader` - Act like a Topaz reader
+- [x] `hf topaz sim` - <UID> -- Simulate Topaz tag
+- [x] `hf topaz sniff` - Sniff Topaz reader-tag communication
+- [x] `hf topaz raw` - Send raw hex data to tag
+- [x] `hf waveshare loadbmp` - Load BMP file to Waveshare NFC ePaper
+- [x] `hf list` - List protocol data in trace buffer
+- [x] `hf plot` - Plot signal
+- [x] `hf tune` - Continuously measure HF antenna tuning
+- [x] `hf search` - Search for known HF tags
+- [x] `hf sniff` - Generic HF Sniff
+
+## hw (16 commands)
+
+- [x] `hw break` - Send break loop usb command
+- [x] `hw connect` - Connect Proxmark3 to serial port
+- [x] `hw dbg` - Set Proxmark3 debug level
+- [x] `hw detectreader` - Detect external reader field
+- [x] `hw fpgaoff` - Set FPGA off
+- [x] `hw ping` - Test if the Proxmark3 is responsive
+- [x] `hw readmem` - Read memory at decimal address from flash
+- [x] `hw reset` - Reset the Proxmark3
+- [x] `hw setlfdivisor` - Drive LF antenna at 12MHz / (divisor + 1)
+- [x] `hw setmux` - Set the ADC mux to a specific value
+- [x] `hw standalone` - Jump to the standalone mode
+- [x] `hw status` - Show runtime status information about the connected Proxmark3
+- [x] `hw tearoff` - Program a tearoff hook for the next command supporting tearoff
+- [x] `hw tia` - Trigger a Timing Interval Acquisition to re-adjust the RealTimeCounter divider
+- [x] `hw tune` - Measure antenna tuning
+- [x] `hw version` - Show version information about the connected Proxmark3
+
+## lf (181 commands)
+
+- [x] `lf awid demod` - demodulate an AWID FSK tag from the GraphBuffer
+- [x] `lf awid reader` - attempt to read and extract tag data
+- [x] `lf awid clone` - clone AWID tag to T55x7 or Q5/T5555
+- [x] `lf awid sim` - simulate AWID tag
+- [x] `lf awid brute` - bruteforce card number against reader
+- [x] `lf awid watch` - continuously watch for cards. Reader mode
+- [x] `lf cotag demod` - demodulate an COTAG tag
+- [x] `lf cotag reader` - attempt to read and extract tag data
+- [x] `lf destron demod` - demodulate an Destron tag from the GraphBuffer
+- [x] `lf destron reader` - attempt to read and extract tag data
+- [x] `lf destron clone` - clone Destron tag to T55x7
+- [x] `lf destron sim` - simulate Destron tag
+- [x] `lf em 410x demod` - demodulate a EM410x tag from the GraphBuffer
+- [x] `lf em 410x reader` - attempt to read and extract tag data
+- [x] `lf em 410x sim` - simulate EM410x tag
+- [x] `lf em 410x brute` - reader bruteforce attack by simulating EM410x tags
+- [x] `lf em 410x watch` - watches for EM410x 125/134 kHz tags (option 'h' for 134)
+- [x] `lf em 410x spoof` - watches for EM410x 125/134 kHz tags, and replays them. (option 'h' for 134)
+- [x] `lf em 410x clone` - write EM410x UID to T55x7 or Q5/T5555 tag
+- [x] `lf em 4x05 brute` - Bruteforce password
+- [x] `lf em 4x05 chk` - Check passwords from dictionary
+- [x] `lf em 4x05 demod` - demodulate a EM4x05/EM4x69 tag from the GraphBuffer
+- [x] `lf em 4x05 dump` - dump EM4x05/EM4x69 tag
+- [x] `lf em 4x05 info` - tag information EM4x05/EM4x69
+- [x] `lf em 4x05 read` - read word data from EM4x05/EM4x69
+- [x] `lf em 4x05 sniff` - Attempt to recover em4x05 commands from sample buffer
+- [x] `lf em 4x05 unlock` - execute tear off against EM4x05/EM4x69
+- [x] `lf em 4x05 wipe` - wipe EM4x05/EM4x69 tag
+- [x] `lf em 4x05 write` - write word data to EM4x05/EM4x69
+- [x] `lf em 4x50 brute` - Simple bruteforce attack to find password
+- [x] `lf em 4x50 chk` - Check passwords from dictionary
+- [x] `lf em 4x50 dump` - Dump EM4x50 tag
+- [x] `lf em 4x50 info` - Tag information
+- [x] `lf em 4x50 login` - Login into EM4x50 tag
+- [x] `lf em 4x50 rdbl` - Read EM4x50 word data
+- [x] `lf em 4x50 reader` - Show standard read mode data
+- [x] `lf em 4x50 restore` - Restore EM4x50 dump to tag
+- [x] `lf em 4x50 wrbl` - Write EM4x50 word data
+- [x] `lf em 4x50 wrpwd` - Change EM4x50 password
+- [x] `lf em 4x50 wipe` - Wipe EM4x50 tag
+- [x] `lf em 4x50 eload` - Upload EM4x50 dump to emulator memory
+- [x] `lf em 4x50 esave` - Save emulator memory to file
+- [x] `lf em 4x50 eview` - View EM4x50 content in emulator memory
+- [x] `lf em 4x50 sim` - Simulate EM4x50 tag
+- [x] `lf em 4x70 info` - Tag information EM4x70
+- [x] `lf em 4x70 write` - Write EM4x70
+- [x] `lf em 4x70 unlock` - Unlock EM4x70 for writing
+- [x] `lf em 4x70 auth` - Authenticate EM4x70
+- [x] `lf em 4x70 writepin` - Write PIN
+- [x] `lf em 4x70 writekey` - Write Crypt Key
+- [x] `lf fdxb demod` - demodulate a FDX-B ISO11784/85 tag from the GraphBuffer
+- [x] `lf fdxb reader` - attempt to read at 134kHz and extract tag data
+- [x] `lf fdxb clone` - clone animal ID tag to T55x7 or Q5/T5555
+- [x] `lf fdxb sim` - simulate Animal ID tag
+- [x] `lf gallagher demod` - demodulate an GALLAGHER tag from the GraphBuffer
+- [x] `lf gallagher reader` - attempt to read and extract tag data
+- [x] `lf gallagher clone` - clone GALLAGHER tag to T55x7
+- [x] `lf gallagher sim` - simulate GALLAGHER tag
+- [x] `lf gproxii demod` - demodulate a G Prox II tag from the GraphBuffer
+- [x] `lf gproxii reader` - attempt to read and extract tag data
+- [x] `lf gproxii clone` - clone Guardall tag to T55x7 or Q5/T5555
+- [x] `lf gproxii sim` - simulate Guardall tag
+- [x] `lf hid demod` - demodulate HID Prox tag from the GraphBuffer
+- [x] `lf hid reader` - attempt to read and extract tag data
+- [x] `lf hid clone` - clone HID tag to T55x7
+- [x] `lf hid sim` - simulate HID tag
+- [x] `lf hid brute` - bruteforce card number against reader
+- [x] `lf hid watch` - continuously watch for cards. Reader mode
+- [x] `lf hitag eload` - Load Hitag dump file into emulator memory
+- [x] `lf hitag list` - List Hitag trace history
+- [x] `lf hitag info` - Tag information
+- [x] `lf hitag reader` - Act like a Hitag reader
+- [x] `lf hitag sim` - Simulate Hitag transponder
+- [x] `lf hitag sniff` - Eavesdrop Hitag communication
+- [x] `lf hitag writer` - Act like a Hitag writer
+- [x] `lf hitag dump` - Dump Hitag2 tag
+- [x] `lf hitag cc` - Test all challenges
+- [x] `lf idteck demod` - demodulate an Idteck tag from the GraphBuffer
+- [x] `lf idteck reader` - attempt to read and extract tag data
+- [x] `lf idteck clone` - clone Idteck tag to T55x7 or Q5/T5555
+- [x] `lf idteck sim` - simulate Idteck tag
+- [x] `lf indala demod` - Demodulate an Indala tag (PSK1) from GraphBuffer
+- [x] `lf indala altdemod` - Alternative method to demodulate samples for Indala 64 bit UID (option '224' for 224 bit)
+- [x] `lf indala reader` - Read an Indala tag from the antenna
+- [x] `lf indala clone` - Clone Indala tag to T55x7 or Q5/T5555
+- [x] `lf indala sim` - Simulate Indala tag
+- [x] `lf io demod` - demodulate an ioProx tag from the GraphBuffer
+- [x] `lf io reader` - attempt to read and extract tag data
+- [x] `lf io clone` - clone ioProx tag to T55x7 or Q5/T5555
+- [x] `lf io sim` - simulate ioProx tag
+- [x] `lf io watch` - continuously watch for cards. Reader mode
+- [x] `lf jablotron demod` - demodulate an Jablotron tag from the GraphBuffer
+- [x] `lf jablotron reader` - attempt to read and extract tag data
+- [x] `lf jablotron clone` - clone jablotron tag to T55x7 or Q5/T5555
+- [x] `lf jablotron sim` - simulate jablotron tag
+- [x] `lf keri demod` - demodulate an KERI tag from the GraphBuffer
+- [x] `lf keri reader` - attempt to read and extract tag data
+- [x] `lf keri clone` - clone KERI tag to T55x7 or Q5/T5555
+- [x] `lf keri sim` - simulate KERI tag
+- [x] `lf motorola demod` - demodulate an MOTOROLA tag from the GraphBuffer
+- [x] `lf motorola reader` - attempt to read and extract tag data
+- [x] `lf motorola clone` - clone MOTOROLA tag to T55x7
+- [x] `lf motorola sim` - simulate MOTOROLA tag
+- [x] `lf nedap demod` - demodulate Nedap tag from the GraphBuffer
+- [x] `lf nedap reader` - attempt to read and extract tag data
+- [x] `lf nedap clone` - clone Nedap tag to T55x7 or Q5/T5555
+- [x] `lf nedap sim` - simulate Nedap tag
+- [x] `lf nexwatch demod` - demodulate a NexWatch tag (nexkey, quadrakey) from the GraphBuffer
+- [x] `lf nexwatch reader` - attempt to read and extract tag data
+- [x] `lf nexwatch clone` - clone NexWatch tag to T55x7
+- [x] `lf nexwatch sim` - simulate NexWatch tag
+- [x] `lf noralsy demod` - demodulate an Noralsy tag from the GraphBuffer
+- [x] `lf noralsy reader` - attempt to read and extract tag data
+- [x] `lf noralsy clone` - clone Noralsy tag to T55x7 or Q5/T5555
+- [x] `lf noralsy sim` - simulate Noralsy tag
+- [x] `lf pac demod` - demodulate a PAC tag from the GraphBuffer
+- [x] `lf pac reader` - attempt to read and extract tag data
+- [x] `lf pac clone` - clone PAC tag to T55x7
+- [x] `lf pac sim` - simulate PAC tag
+- [x] `lf paradox demod` - demodulate a Paradox FSK tag from the GraphBuffer
+- [x] `lf paradox reader` - attempt to read and extract tag data
+- [x] `lf paradox clone` - clone paradox tag
+- [x] `lf paradox sim` - simulate paradox tag
+- [x] `lf pcf7931 reader` - Read content of a PCF7931 transponder
+- [x] `lf pcf7931 write` - Write data on a PCF7931 transponder.
+- [x] `lf pcf7931 config` - Configure the password, the tags initialization delay and time offsets (optional)
+- [x] `lf presco demod` - demodulate Presco tag from the GraphBuffer
+- [x] `lf presco reader` - attempt to read and extract tag data
+- [x] `lf presco clone` - clone presco tag to T55x7 or Q5/T5555
+- [x] `lf presco sim` - simulate presco tag
+- [x] `lf pyramid demod` - demodulate a Pyramid FSK tag from the GraphBuffer
+- [x] `lf pyramid reader` - attempt to read and extract tag data
+- [x] `lf pyramid clone` - clone pyramid tag to T55x7 or Q5/T5555
+- [x] `lf pyramid sim` - simulate pyramid tag
+- [x] `lf securakey demod` - demodulate an Securakey tag from the GraphBuffer
+- [x] `lf securakey reader` - attempt to read and extract tag data
+- [x] `lf securakey clone` - clone Securakey tag to T55x7
+- [x] `lf securakey sim` - simulate Securakey tag
+- [x] `lf ti demod` - Demodulate raw bits for TI LF tag from the GraphBuffer
+- [x] `lf ti reader` - Read and decode a TI 134 kHz tag
+- [x] `lf ti write` - Write new data to a r/w TI 134 kHz tag
+- [x] `lf t55xx clonehelp` - Shows the available clone commands
+- [x] `lf t55xx config` - Set/Get T55XX configuration (modulation, inverted, offset, rate)
+- [x] `lf t55xx dangerraw` - Sends raw bitstream. Dangerous, do not use!!
+- [x] `lf t55xx detect` - Try detecting the tag modulation from reading the configuration block
+- [x] `lf t55xx deviceconfig` - Set/Get T55XX device configuration
+- [x] `lf t55xx dump` - Dump T55xx card Page 0 block 0-7
+- [x] `lf t55xx info` - Show T55x7 configuration data (page 0/ blk 0)
+- [x] `lf t55xx p1detect` - Try detecting if this is a t55xx tag by reading page 1
+- [x] `lf t55xx read` - Read T55xx block data
+- [x] `lf t55xx resetread` - Send Reset Cmd then lf read the stream to attempt to identify the start of it
+- [x] `lf t55xx restore` - Restore T55xx card Page 0 / Page 1 blocks
+- [x] `lf t55xx trace` - Show T55x7 traceability data (page 1/ blk 0-1)
+- [x] `lf t55xx wakeup` - Send AOR wakeup command
+- [x] `lf t55xx write` - Write T55xx block data
+- [x] `lf t55xx bruteforce` - Simple bruteforce attack to find password
+- [x] `lf t55xx chk` - Check passwords from dictionary/flash
+- [x] `lf t55xx protect` - Password protect tag
+- [x] `lf t55xx recoverpw` - Try to recover from bad password write from a cloner
+- [x] `lf t55xx sniff` - Attempt to recover T55xx commands from sample buffer
+- [x] `lf t55xx special` - Show block changes with 64 different offsets
+- [x] `lf t55xx wipe` - Wipe a T55xx tag and set defaults (will destroy any data on tag)
+- [x] `lf viking demod` - demodulate a Viking tag from the GraphBuffer
+- [x] `lf viking reader` - attempt to read and extract tag data
+- [x] `lf viking clone` - clone Viking tag to T55x7 or Q5/T5555
+- [x] `lf viking sim` - simulate Viking tag
+- [x] `lf visa2000 demod` - demodulate an VISA2000 tag from the GraphBuffer
+- [x] `lf visa2000 reader` - attempt to read and extract tag data
+- [x] `lf visa2000 clone` - clone Visa2000 tag to T55x7 or Q5/T5555
+- [x] `lf visa2000 sim` - simulate Visa2000 tag
+- [x] `lf config` - Get/Set config for LF sampling, bit/sample, decimation, frequency
+- [x] `lf cmdread` - Modulate LF reader field to send command before read
+- [x] `lf read` - Read LF tag
+- [x] `lf search` - Read and Search for valid known tag
+- [x] `lf sim` - Simulate LF tag from buffer
+- [x] `lf simask` - Simulate ASK tag
+- [x] `lf simfsk` - Simulate FSK tag
+- [x] `lf simpsk` - Simulate PSK tag
+- [x] `lf simbidir` - Simulate LF tag (with bidirectional data transmission between reader and tag)
+- [x] `lf sniff` - Sniff LF traffic between reader and tag
+- [x] `lf tune` - Continuously measure LF antenna tuning
+
+## mem (18 commands)
+
+- [x] `mem spiffs copy` - Copy a file to another (destructively) in SPIFFS file system
+- [x] `mem spiffs check` - Check/try to defrag faulty/fragmented file system
+- [x] `mem spiffs dump` - Dump a file from SPIFFS file system
+- [x] `mem spiffs info` - Print file system info and usage statistics
+- [x] `mem spiffs mount` - Mount the SPIFFS file system if not already mounted
+- [x] `mem spiffs remove` - Remove a file from SPIFFS file system
+- [x] `mem spiffs rename` - Rename/move a file in SPIFFS file system
+- [x] `mem spiffs test` - Test SPIFFS Operations
+- [x] `mem spiffs tree` - Print the Flash memory file system tree
+- [x] `mem spiffs unmount` - Un-mount the SPIFFS file system
+- [x] `mem spiffs upload` - Upload file into SPIFFS file system
+- [x] `mem spiffs view` - View file on SPIFFS file system
+- [x] `mem spiffs wipe` - Wipe all files from SPIFFS file system * dangerous *
+- [x] `mem baudrate` - Set Flash memory Spi baudrate
+- [x] `mem dump` - Dump data from flash memory
+- [x] `mem info` - Flash memory information
+- [x] `mem load` - Load data to flash memory
+- [x] `mem wipe` - Wipe data from flash memory
+
+## nfc (10 commands)
+
+- [x] `nfc type1 read` - read NFC Forum Tag Type 1
+- [x] `nfc type2 read` - read NFC Forum Tag Type 2
+- [x] `nfc type4a read` - read NFC Forum Tag Type 4 A
+- [x] `nfc type4a st25taread` - read ST25TA as NFC Forum Tag Type 4
+- [x] `nfc type4b read` - read NFC Forum Tag Type 4 B
+- [x] `nfc mf cread` - read NFC Type MIFARE Classic Tag
+- [x] `nfc mf pread` - read NFC Type MIFARE Plus Tag
+- [x] `nfc barcode read` - read NFC Barcode
+- [x] `nfc barcode sim` - simulate NFC Barcode
+- [x] `nfc decode` - Decode NDEF records
+
+## smart (7 commands)
+
+- [x] `smart list` - List ISO 7816 history
+- [x] `smart info` - Tag information
+- [x] `smart reader` - Act like an IS07816 reader
+- [x] `smart raw` - Send raw hex data to tag
+- [x] `smart upgrade` - Upgrade sim module firmware
+- [x] `smart setclock` - Set clock speed
+- [x] `smart brute` - Bruteforce SFI
+
+## script (2 commands)
+
+- [x] `script list` - List available scripts
+- [x] `script run` - <name> - execute a script
+
+## trace (3 commands)
+
+- [x] `trace list` - List protocol data in trace buffer
+- [x] `trace load` - Load trace from file
+- [x] `trace save` - Save trace buffer to file
+
+## usart (2 commands)
+
+- [x] `usart btpin` - Change BT add-on PIN
+- [x] `usart btfactory` - Reset BT add-on to factory settings
+
+## wiegand (3 commands)
+
+- [x] `wiegand list` - List available wiegand formats
+- [x] `wiegand encode` - Encode to wiegand raw hex (currently for HID Prox)
+- [x] `wiegand decode` - Convert raw hex to decoded wiegand format (currently for HID Prox)
+
