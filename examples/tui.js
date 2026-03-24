@@ -11,7 +11,7 @@
  *
  * Keys:
  *   Enter     — Open parameter form for selected command
- *   Tab       — Cycle focus / next field in form
+ *   Tab       — Next field in form / cycle panels
  *   /         — Free-form command input
  *   Escape    — Cancel form / return to tree
  *   q, Ctrl-C — Quit (when tree focused)
@@ -37,9 +37,6 @@ if (!pm3Path) {
 
 // ── Helpers ────────────────────────────────────────────────────
 
-/**
- * Parse a flag string into name, flag, and type info.
- */
 function parseFlag(flagStr) {
 	const valueMatch = flagStr.match(/<([^>]+)>/);
 	const hasValue = !!valueMatch;
@@ -71,8 +68,10 @@ let running = false;
 let connected = false;
 let selectedPath = [];
 let formActive = false;
-let formWidgets = [];
 let formParams = [];
+let formFocusTargets = [];
+let formFocusIdx = 0;
+let formCmdPath = [];
 
 // ── Screen ─────────────────────────────────────────────────────
 
@@ -103,7 +102,7 @@ const tree = grid.set(0, 0, 22, 4, contrib.tree, {
 	},
 });
 
-// Right top: help panel (also used for parameter form)
+// Right top: help panel
 const helpBox = grid.set(0, 4, 10, 8, blessed.box, {
 	label: " Help ",
 	tags: true,
@@ -131,6 +130,27 @@ const logBox = grid.set(10, 4, 12, 8, contrib.log, {
 		border: { fg: "green" },
 		label: { fg: "green", bold: true },
 	},
+});
+
+// Parameter form overlay — positioned over helpBox, hidden by default
+const formBox = blessed.box({
+	parent: screen,
+	top: helpBox.atop,
+	left: helpBox.aleft,
+	width: helpBox.width,
+	height: helpBox.height,
+	border: { type: "line" },
+	label: " Parameters ",
+	tags: true,
+	scrollable: true,
+	alwaysScroll: true,
+	mouse: true,
+	scrollbar: { style: { bg: "yellow" } },
+	style: {
+		border: { fg: "magenta" },
+		label: { fg: "magenta", bold: true },
+	},
+	hidden: true,
 });
 
 // Free-form input bar
@@ -176,7 +196,7 @@ function updateStatus() {
 		selectedPath.length > 0 ? "  │  " + selectedPath.join(" ") : "";
 	let hint;
 	if (formActive) {
-		hint = "{gray-fg}Tab:next field  Enter:execute  Esc:cancel{/gray-fg}";
+		hint = "{gray-fg}Tab:next  Space:toggle  Enter:execute  Esc:cancel{/gray-fg}";
 	} else if (screen.focused === inputBar) {
 		hint = "{gray-fg}Enter:execute  Esc:cancel{/gray-fg}";
 	} else {
@@ -280,15 +300,20 @@ function showHelp(cmdPath) {
 	screen.render();
 }
 
-// ── Parameter form ─────────────────────────────────────────────
+// ── Parameter form (overlay approach) ──────────────────────────
 
 function clearForm() {
-	for (const w of formWidgets) {
-		helpBox.remove(w);
+	// Remove all children from formBox
+	while (formBox.children.length > 0) {
+		formBox.remove(formBox.children[0]);
 	}
-	formWidgets = [];
+	formBox.hide();
+	helpBox.show();
 	formParams = [];
+	formFocusTargets = [];
+	formFocusIdx = 0;
 	formActive = false;
+	formCmdPath = [];
 }
 
 function showParameterForm(cmdPath) {
@@ -298,15 +323,10 @@ function showParameterForm(cmdPath) {
 	const help = helpData[helpKey];
 
 	if (!help || !help.options || help.options.length === 0) {
-		// No parameters — execute directly
 		executeCommand(cmdPath, []);
 		return;
 	}
 
-	formActive = true;
-	formParams = [];
-
-	// Parse options
 	const parsed = [];
 	for (const opt of help.options) {
 		const p = parseFlag(opt.flag);
@@ -319,98 +339,75 @@ function showParameterForm(cmdPath) {
 		return;
 	}
 
-	// Build form content as static text + input widgets
-	const titleLine = `{bold}{yellow-fg}${cmdPath.join(" ")}{/yellow-fg}{/bold}`;
-	const descLine = help.description || "";
-	const usageLine = help.usage ? `{cyan-fg}Usage:{/cyan-fg} ${help.usage}` : "";
+	formActive = true;
+	formCmdPath = cmdPath;
+	formParams = [];
+	formFocusTargets = [];
+	formFocusIdx = 0;
 
-	let headerText = titleLine + "\n" + descLine;
-	if (usageLine) headerText += "\n" + usageLine;
-	headerText += "\n\n{cyan-fg}Parameters:{/cyan-fg} {gray-fg}(Tab to navigate, Enter to execute){/gray-fg}\n";
+	// Header text inside formBox
+	const headerContent =
+		`{bold}{yellow-fg}${cmdPath.join(" ")}{/yellow-fg}{/bold}  ` +
+		`{gray-fg}${help.description || ""}{/gray-fg}\n` +
+		(help.usage ? `{cyan-fg}Usage:{/cyan-fg} ${help.usage}\n` : "") +
+		`\n{cyan-fg}Fill parameters and press Enter to execute:{/cyan-fg}\n`;
 
-	helpBox.setContent(headerText);
+	const formHeader = blessed.text({
+		parent: formBox,
+		top: 0,
+		left: 1,
+		width: "95%",
+		height: headerContent.split("\n").length,
+		content: headerContent,
+		tags: true,
+	});
 
-	// Count header lines for positioning
-	const headerLines = headerText.split("\n").length;
-
-	const focusTargets = [];
+	const startRow = headerContent.split("\n").length + 1;
 
 	for (let i = 0; i < parsed.length; i++) {
 		const p = parsed[i];
-		const row = headerLines + i * 2;
-
-		// Label
-		const labelText = p.hasValue
-			? `${p.name} <${p.valueType}>`
-			: `${p.name}`;
-
-		const label = blessed.text({
-			parent: helpBox,
-			top: row,
-			left: 1,
-			width: 20,
-			height: 1,
-			content: labelText,
-			tags: true,
-			style: { fg: "green" },
-		});
-		formWidgets.push(label);
-
-		// Description
-		const descText = blessed.text({
-			parent: helpBox,
-			top: row,
-			left: 22,
-			width: "50%",
-			height: 1,
-			content: p.description,
-			tags: true,
-			style: { fg: "gray" },
-		});
-		formWidgets.push(descText);
+		const row = startRow + i * 2;
 
 		if (p.hasValue) {
-			// Text input for value params
+			// Label with type hint
+			const label = blessed.text({
+				parent: formBox,
+				top: row,
+				left: 1,
+				width: "95%",
+				height: 1,
+				content: `{green-fg}${p.name}{/green-fg} {cyan-fg}<${p.valueType}>{/cyan-fg}  {gray-fg}${p.description}{/gray-fg}`,
+				tags: true,
+			});
+
+			// Text input
 			const input = blessed.textbox({
-				parent: helpBox,
+				parent: formBox,
 				top: row + 1,
 				left: 1,
 				width: "90%",
 				height: 1,
+				mouse: true,
+				inputOnFocus: false,
 				style: {
 					fg: "white",
 					bg: "#444444",
-					focus: { bg: "#666666", fg: "white" },
+					focus: { bg: "#555555" },
 				},
-				inputOnFocus: true,
-				mouse: true,
 			});
 
-			input.on("submit", function () {
-				submitForm(cmdPath);
-			});
-
-			input.on("cancel", function () {
-				cancelForm();
-			});
-
-			formWidgets.push(input);
-			focusTargets.push(input);
-
-			formParams.push({
-				flag: p.flag,
-				hasValue: true,
-				widget: input,
-			});
+			formFocusTargets.push(input);
+			formParams.push({ flag: p.flag, hasValue: true, widget: input });
 		} else {
-			// Checkbox for boolean flags
+			// Checkbox for boolean
 			const cb = blessed.checkbox({
-				parent: helpBox,
-				top: row + 1,
+				parent: formBox,
+				top: row,
 				left: 1,
-				width: 30,
+				width: "95%",
 				height: 1,
-				content: `[${p.flag}]`,
+				content: `{green-fg}${p.name}{/green-fg}  {gray-fg}${p.description}{/gray-fg}`,
+				tags: true,
 				mouse: true,
 				style: {
 					fg: "white",
@@ -418,21 +415,25 @@ function showParameterForm(cmdPath) {
 				},
 			});
 
-			formWidgets.push(cb);
-			focusTargets.push(cb);
-
-			formParams.push({
-				flag: p.flag,
-				hasValue: false,
-				widget: cb,
+			// Empty spacer line for consistent 2-row spacing
+			blessed.text({
+				parent: formBox,
+				top: row + 1,
+				left: 1,
+				width: 1,
+				height: 1,
+				content: "",
 			});
+
+			formFocusTargets.push(cb);
+			formParams.push({ flag: p.flag, hasValue: false, widget: cb });
 		}
 	}
 
 	// Execute button
-	const btnRow = headerLines + parsed.length * 2 + 1;
+	const btnRow = startRow + parsed.length * 2 + 1;
 	const btn = blessed.button({
-		parent: helpBox,
+		parent: formBox,
 		top: btnRow,
 		left: 1,
 		width: 20,
@@ -449,33 +450,38 @@ function showParameterForm(cmdPath) {
 	});
 
 	btn.on("press", function () {
-		submitForm(cmdPath);
+		submitForm();
 	});
 
-	formWidgets.push(btn);
-	focusTargets.push(btn);
+	formFocusTargets.push(btn);
 
-	// Tab navigation through form fields
-	for (let i = 0; i < focusTargets.length; i++) {
-		const w = focusTargets[i];
-		const nextIdx = (i + 1) % focusTargets.length;
-
-		w.key(["tab"], function () {
-			focusTargets[nextIdx].focus();
-			screen.render();
-		});
-	}
+	// Show form, hide help
+	helpBox.hide();
+	formBox.setLabel(` ${cmdPath.join(" ")} — Parameters `);
+	formBox.show();
 
 	// Focus first field
-	if (focusTargets.length > 0) {
-		focusTargets[0].focus();
-	}
-
+	focusFormField(0);
 	updateStatus();
 	screen.render();
 }
 
-function submitForm(cmdPath) {
+function focusFormField(idx) {
+	if (formFocusTargets.length === 0) return;
+	formFocusIdx = ((idx % formFocusTargets.length) + formFocusTargets.length) % formFocusTargets.length;
+	const target = formFocusTargets[formFocusIdx];
+
+	// For textbox: we need to manually start input
+	if (target.type === "textbox") {
+		target.focus();
+		target.readInput();
+	} else {
+		target.focus();
+	}
+	screen.render();
+}
+
+function submitForm() {
 	const args = [];
 
 	for (const p of formParams) {
@@ -491,20 +497,63 @@ function submitForm(cmdPath) {
 		}
 	}
 
+	const cmdPath = [...formCmdPath];
 	clearForm();
 	showHelp(cmdPath);
 	executeCommand(cmdPath, args);
 }
 
 function cancelForm() {
+	const cmdPath = [...formCmdPath];
 	clearForm();
-	if (selectedPath.length > 0) {
-		showHelp(selectedPath);
+	if (cmdPath.length > 0) {
+		showHelp(cmdPath);
 	}
 	tree.focus();
 	updateStatus();
 	screen.render();
 }
+
+// Handle Tab/Enter/Escape within form context
+screen.on("keypress", function (ch, key) {
+	if (!formActive) return;
+
+	if (key.name === "tab" && !key.shift) {
+		// Move to next field
+		const current = formFocusTargets[formFocusIdx];
+		// If current is a textbox in input mode, cancel it first
+		if (current && current.type === "textbox") {
+			current.cancel();
+		}
+		focusFormField(formFocusIdx + 1);
+		return;
+	}
+
+	if (key.name === "tab" && key.shift) {
+		const current = formFocusTargets[formFocusIdx];
+		if (current && current.type === "textbox") {
+			current.cancel();
+		}
+		focusFormField(formFocusIdx - 1);
+		return;
+	}
+
+	if (key.name === "escape") {
+		const current = formFocusTargets[formFocusIdx];
+		if (current && current.type === "textbox") {
+			current.cancel();
+		}
+		cancelForm();
+		return;
+	}
+});
+
+// When a textbox submits (Enter pressed while editing), move to next or execute
+screen.on("element focus", function (el) {
+	if (!formActive) return;
+	const idx = formFocusTargets.indexOf(el);
+	if (idx >= 0) formFocusIdx = idx;
+});
 
 // ── Tree navigation ────────────────────────────────────────────
 
@@ -546,7 +595,6 @@ tree.on("select", function () {
 
 	selectedPath = path;
 
-	// Check if leaf
 	let cmdNode = commands;
 	for (const p of path) {
 		if (!cmdNode[p]) return;
@@ -673,7 +721,7 @@ screen.key(["q", "C-c"], function () {
 });
 
 screen.key(["tab"], function () {
-	if (formActive) return; // Tab handled by form fields
+	if (formActive) return; // Handled by keypress handler
 	if (screen.focused === inputBar) {
 		tree.focus();
 	} else if (
@@ -697,10 +745,7 @@ screen.key(["/"], function () {
 });
 
 screen.key(["escape"], function () {
-	if (formActive) {
-		cancelForm();
-		return;
-	}
+	if (formActive) return; // Handled by keypress handler
 	if (screen.focused === inputBar) {
 		inputBar.clearValue();
 		tree.focus();
@@ -741,7 +786,7 @@ clientPromise
 		logBox.log("──────────────────────────────────");
 		logBox.log("{cyan-fg}Enter{/cyan-fg}  Open parameter form");
 		logBox.log("{cyan-fg}/{/cyan-fg}      Type raw command with flags");
-		logBox.log("{cyan-fg}Tab{/cyan-fg}    Navigate form fields / panels");
+		logBox.log("{cyan-fg}Tab{/cyan-fg}    Navigate fields / panels");
 		logBox.log("{cyan-fg}Esc{/cyan-fg}    Cancel / back to tree");
 		logBox.log("");
 
