@@ -24,6 +24,7 @@ Provides a complete JavaScript API with **789 commands** across all Proxmark3 co
 * [API Design](#api-design)
   * [Smart Parameters](#smart-parameters)
   * [Module Structure](#module-structure)
+* [Terminal UI](#terminal-ui)
 * [MCP Server for AI-Assisted RFID Research](#mcp-server-for-ai-assisted-rfid-research)
   * [Setup](#setup)
   * [What You Can Do](#what-you-can-do)
@@ -289,6 +290,30 @@ pm3.lf(clientPromise) → { search, parse, write, em: { "410x": { ... } }, hid: 
 pm3.data(clientPromise) → { plot, rawdemod, load, save, ... }
 ...
 ```
+
+## Terminal UI
+
+Interactive terminal interface for browsing and executing all Proxmark3 commands. Features a command tree, help panel with usage/options/examples, and named parameter forms for each command.
+
+```bash
+yarn global add node-proxmark3
+PM3=/path/to/proxmark3 pm3-tui
+```
+
+**Layout:**
+- **Left panel** — command tree (loaded instantly from `commands.json`)
+- **Top right** — help panel showing usage, options, and examples for the selected command
+- **Bottom right** — command output log
+
+**Workflow:**
+1. Navigate the tree with arrow keys
+2. Press **Enter** on a command — a parameter form appears with labeled input fields for each option (text inputs for values like `<hex>`, `<dec>`, checkboxes for boolean flags)
+3. **Tab** / **Shift-Tab** to move between fields
+4. **Enter** to execute with filled parameters
+5. **Escape** to cancel back to the tree
+6. **/** to type a raw command with flags directly
+
+Commands with no parameters execute immediately on Enter.
 
 ## MCP Server for AI-Assisted RFID Research
 
