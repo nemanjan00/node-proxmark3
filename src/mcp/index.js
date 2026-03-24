@@ -22,11 +22,22 @@ if (!pm3Path) {
 	process.exit(1);
 }
 
-const clientPromise = createClient(pm3Path);
+let clientPromise = createClient(pm3Path);
+
+async function restartClient() {
+	try {
+		const old = await clientPromise.catch(() => null);
+		if (old && old.client && old.client._child) {
+			old.client._child.kill();
+		}
+	} catch (e) {}
+	clientPromise = createClient(pm3Path);
+	return clientPromise;
+}
 
 const server = new McpServer({
 	name: "proxmark3",
-	version: "0.0.9"
+	version: "0.0.11"
 });
 
 const SKIP_COMMANDS = new Set([
@@ -198,6 +209,16 @@ server.tool(
 		const args = cmd.split(" ");
 		const result = await command(client.client, [])(args);
 		return { content: [{ type: "text", text: result }] };
+	}
+);
+
+server.tool(
+	"pm3_restart",
+	"Kill the current proxmark3 client process and start a fresh one. Useful during development or when the connection is stuck.",
+	{},
+	async () => {
+		await restartClient();
+		return { content: [{ type: "text", text: "Proxmark3 client restarted" }] };
 	}
 );
 

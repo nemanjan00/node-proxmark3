@@ -1,6 +1,6 @@
 {
   "name": "node-proxmark3",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Node.js library for proxmark3",
   "main": "src/index.js",
   "repository": "https://github.com/nemanjan00/node-proxmark3.git",
