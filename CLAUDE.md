@@ -2,68 +2,47 @@
 
 ## Project Overview
 
-Node.js library and MCP server for Proxmark3 RFID research tool. Provides a JavaScript API with 789 commands covering all PM3 functionality, plus an MCP server for AI assistant integration.
+Node.js library and MCP server for Proxmark3 RFID research tool. 789 commands across 15 modules with JSDoc, smart named parameters, and an MCP server for AI integration.
 
 ## Architecture
 
-### Core Modules
+```
+src/
+├── client/     — createClient(pm3Path) → Promise<{command, client, help}>
+├── command/    — command(client, argsArray) → (params) => Promise<string> (serialized)
+├── daemon/     — Spawns/manages proxmark3 child process
+├── help/       — Parses PM3 help output into command tree
+├── mcp/        — MCP server exposing all commands as tools
+├── hw/         — 22 hardware commands (single file)
+├── hf/         — 408 HF commands (index.js assembles 5 _parts_*.js files)
+├── lf/         — 213 LF commands (custom search/parse/write + 3 _parts_*.js via commands.js)
+│   └── em/     — EM410x-specific parsing/cloning logic
+├── data/       — 47 data/plot commands
+├── prefs/      — 23 preference commands (nested get/set)
+├── emv/        — 15 EMV commands
+├── mem/        — 18 memory commands (nested with spiffs)
+├── nfc/        — 14 NFC commands (nested sub-groups)
+├── analyse/    — 11 analysis commands
+├── smart/      — 8 smart card commands
+├── trace/      — 3 trace commands
+├── wiegand/    — 3 wiegand commands
+├── script/     — 2 script commands
+└── usart/      — 2 UART/BT commands
+```
 
-- `src/client/index.js` — Creates a PM3 client connection via `createClient(pm3Path)`. Returns `Promise<{command, client, help}>`
-- `src/command/index.js` — Command executor. `command(client, argsArray)` returns `(params) => Promise<string>`. Serializes commands (one at a time)
-- `src/daemon/index.js` — Spawns and manages the proxmark3 child process
-- `src/help/index.js` — Parses PM3 help output into a command tree
+## Module Pattern
 
-### Command Modules
-
-Each module is a factory: `(clientPromise) => ({ commandTree })`. Commands are async functions with named parameters.
-
-| Module | File | Notes |
-|--------|------|-------|
-| `hw` | `src/hw/index.js` | Single file, 22 commands |
-| `hf` | `src/hf/index.js` | Assembles 5 parts files (`_parts_small.js`, `_parts_iso.js`, `_parts_mf.js`, `_parts_mfx.js`, `_parts_other.js`) |
-| `lf` | `src/lf/index.js` | Custom search/parse/write logic + assembles 3 parts files via `commands.js` |
-| `data` | `src/data/index.js` | Single file, 47 commands |
-| `prefs` | `src/prefs/index.js` | Nested get/set structure |
-| `emv` | `src/emv/index.js` | Single file |
-| `mem` | `src/mem/index.js` | Nested with spiffs sub-group |
-| `nfc` | `src/nfc/index.js` | Nested with barcode/mf/type sub-groups |
-| Others | `src/<name>/index.js` | analyse, smart, trace, wiegand, script, usart |
-
-### LF Module (Special)
-
-`src/lf/index.js` has custom logic beyond command stubs:
-- `search()` — Calls `lf search`, parses output to extract card type, chipset, and ID
-- `parse(output)` — Parses raw PM3 output into structured card objects
-- `write(card, sourceCard)` — Clones a card ID and verifies the write
-- Uses `src/lf/em/` for EM410x-specific parsing and cloning
-
-### MCP Server
-
-`src/mcp/index.js` — Exposes all commands as MCP tools. Uses `commands-help.json` for rich tool descriptions (usage, options, examples). Special tools: `lf_search` (parsed output), `lf_write` (clone with verify), `pm3_command` (arbitrary commands).
-
-### Data Files
-
-- `commands.json` — Command tree structure (generated from PM3 help)
-- `commands-help.json` — Parsed `--fulltext` help output with usage, options, examples per command
-- `commands-fulltext.txt` — Raw `pm3 --fulltext` dump
-
-### Code Generation
-
-`scripts/generate-stubs.js` was used for initial generation but all modules have been manually reviewed and refined. The generated files are committed as normal source code. Run `node scripts/generate-stubs.js` to regenerate from `commands.json` + `commands-help.json` (will overwrite manual edits).
-
-## Key Patterns
-
-### Command function pattern
+Every module is a factory: `(clientPromise) => ({ commandTree })`.
 
 ```javascript
 // No-arg command
-commandName: async () => {
+name: async () => {
   const client = await clientPromise;
   return command(client.client, ["group", "cmd"])([]);
 },
 
-// Command with smart named params
-commandName: async ({ param1, param2, boolFlag } = {}) => {
+// Smart named params (optional)
+name: async ({ param1, boolFlag } = {}) => {
   const client = await clientPromise;
   const args = [];
   if (param1 !== undefined && param1 !== null) args.push("--flag", String(param1));
@@ -71,39 +50,50 @@ commandName: async ({ param1, param2, boolFlag } = {}) => {
   return command(client.client, ["group", "cmd"])(args);
 },
 
-// Command with required params (no default on destructuring)
-commandName: async ({ requiredParam }) => {
-  const client = await clientPromise;
-  // requiredParam pushed unconditionally
-  return command(client.client, ["group", "cmd"])(["--flag", String(requiredParam)]);
-},
+// Required params (no default on destructuring)
+name: async ({ requiredParam }) => { ... },
 ```
 
-### Design conventions
+## Design Conventions
 
-- Mutually exclusive flags → single string/enum param (e.g., `hw.dbg(level)` not `hw.dbg({ _0, _1, _2 })`)
+- Mutually exclusive flags → single enum param (`hw.dbg(level)`, `hw.setmux("hipkd")`)
 - `-@` flag → `continuous` param
-- Required params (not in `[]` in usage) have no defaults
-- RFID domain shorthand preserved: `fc`, `cn`, `fmt`, `q5`, `em`
-- Long flag names used when building args (e.g., `--port` not `-p`)
+- Required params (not in `[]` in PM3 usage) → no defaults, throw if missing
+- RFID shorthand preserved: `fc`, `cn`, `fmt`, `q5`, `em`
+- Long flag names in args: `--port` not `-p`
+
+## LF Module (Special)
+
+`src/lf/index.js` has custom logic beyond stubs:
+- `search()` — Parses `lf search` output → `{ type, chipset, id }`
+- `parse(output)` — Raw output → structured card object
+- `write(card, sourceCard)` — Clone + verify
+- `src/lf/em/410x/` — EM410x-specific parse/clone
+
+## MCP Server
+
+`src/mcp/index.js` — walks `commands.json` tree, registers each leaf as an MCP tool with rich descriptions from `commands-help.json`. Special tools: `lf_search` (parsed), `lf_write` (clone+verify), `pm3_command` (arbitrary).
+
+## Data Files
+
+- `commands.json` — Command tree from PM3 help
+- `commands-help.json` — Parsed `--fulltext` output (usage, options, examples)
+- `commands-fulltext.txt` — Raw `pm3 --fulltext` dump
 
 ## Development
 
 ```bash
-# Run tests (requires connected PM3)
-PM3=/path/to/proxmark3 node -e "const pm3 = require('./src'); ..."
+# Start MCP server
+PM3=/path/to/proxmark3 node src/mcp/index.js
 
-# Regenerate command stubs (overwrites manual edits)
-node scripts/generate-stubs.js
-
-# Regenerate help data (requires PM3 binary, no device needed)
+# Regenerate help data
 /path/to/proxmark3 --fulltext > commands-fulltext.txt
 node scripts/parse-fulltext-help.js
 
-# Start MCP server
-PM3=/path/to/proxmark3 node src/mcp/index.js
+# Regenerate stubs (overwrites manual edits)
+node scripts/generate-stubs.js
 ```
 
 ## Environment
 
-- `PM3` — Path to proxmark3 client binary (required for MCP server and tests)
+- `PM3` — Path to proxmark3 binary (required for MCP server)
