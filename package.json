@@ -1,6 +1,6 @@
 {
   "name": "node-proxmark3",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Node.js library for proxmark3",
   "main": "src/index.js",
   "repository": "https://github.com/nemanjan00/node-proxmark3.git",
@@ -8,7 +8,8 @@
   "license": "MIT",
   "private": false,
   "bin": {
-    "pm3-mcp": "./src/mcp/index.js"
+    "pm3-mcp": "./src/mcp/index.js",
+    "pm3-tui": "./examples/tui.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
