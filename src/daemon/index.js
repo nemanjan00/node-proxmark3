@@ -53,7 +53,7 @@ module.exports.createDaemon = (...args) => {
 			let stdoutBuffer = "";
 			daemon._child.stdout.on("data", (data) => {
 				stdoutBuffer += data;
-				const lines = stdoutBuffer.split("\n");
+				const lines = stdoutBuffer.split(/\r?\n|\r/);
 				stdoutBuffer = lines.pop();
 
 				for (const line of lines) {
