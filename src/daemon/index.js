@@ -86,10 +86,18 @@ module.exports.createDaemon = (...args) => {
 				});
 			});
 
+			// Log raw stdout chunks before readline consumes them
+			daemon._child.stdout.on("data", (data) => {
+				const raw = data.toString();
+				const escaped = raw.replace(/\r/g, "\\r").replace(/\n/g, "\\n");
+				log("RAW STDOUT [" + raw.length + "]: " + escaped.substring(0, 300));
+			});
+
 			const stdoutRl = readline.createInterface({ input: daemon._child.stdout });
 
 			stdoutRl.on("line", (line) => {
 				if (!line) return;
+				log("READLINE: " + line.substring(0, 200));
 				try {
 					const message = JSON.parse(line);
 
