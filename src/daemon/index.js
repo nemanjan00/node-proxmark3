@@ -35,21 +35,29 @@ module.exports.createDaemon = (...args) => {
 		},
 
 		_subscribeToMessages: () => {
+			let stderrBuffer = "";
 			daemon._child.stderr.on("data", (data) => {
-				const dataLines = (data + "").split("\n");
+				stderrBuffer += data;
+				const lines = stderrBuffer.split("\n");
+				stderrBuffer = lines.pop();
 
-				dataLines.forEach(line => {
+				for (const line of lines) {
+					if (!line) continue;
 					daemon._events.emit("line", {
 						line,
 						source: "stderr"
 					});
-				});
+				}
 			});
 
+			let stdoutBuffer = "";
 			daemon._child.stdout.on("data", (data) => {
-				const dataLines = (data + "").split("\n");
+				stdoutBuffer += data;
+				const lines = stdoutBuffer.split("\n");
+				stdoutBuffer = lines.pop();
 
-				dataLines.forEach(line => {
+				for (const line of lines) {
+					if (!line) continue;
 					try {
 						const message = JSON.parse(line);
 
@@ -64,6 +72,18 @@ module.exports.createDaemon = (...args) => {
 							source: "stdout"
 						});
 					}
+				}
+			});
+
+			daemon._child.on("exit", (code, signal) => {
+				daemon._events.emit("error", {
+					message: `PM3 process exited (code: ${code}, signal: ${signal})`
+				});
+			});
+
+			daemon._child.on("error", (err) => {
+				daemon._events.emit("error", {
+					message: err.message
 				});
 			});
 		},
