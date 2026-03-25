@@ -10,6 +10,10 @@ module.exports.createDaemon = (...args) => {
 
 		_proxmarkClientPath: undefined,
 
+		_queue: [],
+
+		_running: false,
+
 		_start: (proxmarkClientPath) => {
 			return new Promise((resolve, reject) => {
 				daemon._proxmarkClientPath = proxmarkClientPath;
@@ -18,6 +22,10 @@ module.exports.createDaemon = (...args) => {
 
 				daemon.on("started", () => {
 					resolve(daemon);
+				});
+
+				daemon.on("error", (data) => {
+					reject(new Error(data.message || "PM3 process error"));
 				});
 
 				daemon._subscribeToMessages();
@@ -32,6 +40,17 @@ module.exports.createDaemon = (...args) => {
 			], {
 				cwd: path.resolve(__dirname, "../../")
 			});
+		},
+
+		_sendCommand: () => {
+			if (daemon._running) return;
+
+			const command = daemon._queue.shift();
+
+			if (command === undefined) return;
+
+			daemon._child.stdin.write(JSON.stringify(command) + "\n");
+			daemon._running = true;
 		},
 
 		_subscribeToMessages: () => {
@@ -66,6 +85,11 @@ module.exports.createDaemon = (...args) => {
 						delete message.type;
 
 						daemon._events.emit(type, message);
+
+						if (type === "command_end") {
+							daemon._running = false;
+							daemon._sendCommand();
+						}
 					} catch(e) {
 						daemon._events.emit("line", {
 							line,
@@ -96,7 +120,12 @@ module.exports.createDaemon = (...args) => {
 			message = message || {};
 			message.type = type;
 
-			return daemon._child.stdin.write(JSON.stringify(message) + "\n");
+			if (type === "command") {
+				daemon._queue.push(message);
+				daemon._sendCommand();
+			} else {
+				daemon._child.stdin.write(JSON.stringify(message) + "\n");
+			}
 		},
 
 		removeEventListener: (...args) => {
