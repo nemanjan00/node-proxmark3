@@ -20,5 +20,6 @@ repeat
 		response.type = "command_end"
 
 		io.write(json.encode(response))
+		io.flush()
 	end
 until command['type'] == 'exit'
