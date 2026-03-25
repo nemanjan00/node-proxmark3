@@ -2,8 +2,19 @@ const spawn = require("child_process").spawn;
 const path = require("path");
 const events = require("events");
 const readline = require("readline");
+const fs = require("fs");
+
+const LOG_FILE = "/tmp/pm3-daemon.log";
+
+function log(msg) {
+	const ts = new Date().toISOString();
+	fs.appendFileSync(LOG_FILE, `[${ts}] ${msg}\n`);
+}
 
 module.exports.createDaemon = (...args) => {
+	// Clear log on new daemon creation
+	fs.writeFileSync(LOG_FILE, `=== PM3 daemon started at ${new Date().toISOString()} ===\n`);
+
 	const daemon = {
 		_child: undefined,
 
@@ -22,10 +33,12 @@ module.exports.createDaemon = (...args) => {
 				daemon._startChild();
 
 				daemon.on("started", () => {
+					log("EVENT: started — resolving clientPromise");
 					resolve(daemon);
 				});
 
 				daemon.on("error", (data) => {
+					log("EVENT: error — " + (data.message || "unknown"));
 					reject(new Error(data.message || "PM3 process error"));
 				});
 
@@ -34,6 +47,7 @@ module.exports.createDaemon = (...args) => {
 		},
 
 		_startChild: () => {
+			log("Spawning: " + daemon._proxmarkClientPath);
 			daemon._child = spawn(daemon._proxmarkClientPath, [
 				"-c",
 				"script run interpreter",
@@ -41,16 +55,23 @@ module.exports.createDaemon = (...args) => {
 			], {
 				cwd: path.resolve(__dirname, "../../")
 			});
+			log("Child PID: " + daemon._child.pid);
 		},
 
 		_sendCommand: () => {
+			log("_sendCommand: running=" + daemon._running + " queueLen=" + daemon._queue.length);
 			if (daemon._running) return;
 
 			const command = daemon._queue.shift();
 
-			if (command === undefined) return;
+			if (command === undefined) {
+				log("_sendCommand: queue empty, nothing to send");
+				return;
+			}
 
-			daemon._child.stdin.write(JSON.stringify(command) + "\n");
+			const json = JSON.stringify(command);
+			log("_sendCommand: WRITING to stdin: " + json);
+			daemon._child.stdin.write(json + "\n");
 			daemon._running = true;
 		},
 
@@ -76,9 +97,11 @@ module.exports.createDaemon = (...args) => {
 
 					delete message.type;
 
+					log("STDOUT JSON: type=" + type);
 					daemon._events.emit(type, message);
 
 					if (type === "command_end") {
+						log("command_end: setting _running=false, calling _sendCommand");
 						daemon._running = false;
 						daemon._sendCommand();
 					}
@@ -91,12 +114,14 @@ module.exports.createDaemon = (...args) => {
 			});
 
 			daemon._child.on("exit", (code, signal) => {
+				log("CHILD EXIT: code=" + code + " signal=" + signal);
 				daemon._events.emit("error", {
 					message: `PM3 process exited (code: ${code}, signal: ${signal})`
 				});
 			});
 
 			daemon._child.on("error", (err) => {
+				log("CHILD ERROR: " + err.message);
 				daemon._events.emit("error", {
 					message: err.message
 				});
@@ -112,9 +137,11 @@ module.exports.createDaemon = (...args) => {
 			message.type = type;
 
 			if (type === "command") {
+				log("EMIT command: " + (message.command || "?") + " — pushing to queue");
 				daemon._queue.push(message);
 				daemon._sendCommand();
 			} else {
+				log("EMIT " + type + ": writing to stdin");
 				daemon._child.stdin.write(JSON.stringify(message) + "\n");
 			}
 		},
