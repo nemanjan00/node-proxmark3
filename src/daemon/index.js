@@ -1,6 +1,7 @@
 const spawn = require("child_process").spawn;
 const path = require("path");
 const events = require("events");
+const readline = require("readline");
 
 module.exports.createDaemon = (...args) => {
 	const daemon = {
@@ -54,70 +55,38 @@ module.exports.createDaemon = (...args) => {
 		},
 
 		_subscribeToMessages: () => {
-			let stderrBuffer = "";
-			daemon._child.stderr.on("data", (data) => {
-				stderrBuffer += data;
-				const lines = stderrBuffer.split("\n");
-				stderrBuffer = lines.pop();
+			const stderrRl = readline.createInterface({ input: daemon._child.stderr });
 
-				for (const line of lines) {
-					if (!line) continue;
-					daemon._events.emit("line", {
-						line,
-						source: "stderr"
-					});
-				}
+			stderrRl.on("line", (line) => {
+				if (!line) return;
+				daemon._events.emit("line", {
+					line,
+					source: "stderr"
+				});
 			});
 
-			let stdoutBuffer = "";
-			daemon._child.stdout.on("data", (data) => {
-				stdoutBuffer += data;
-				const lines = stdoutBuffer.split(/\r?\n|\r/);
-				stdoutBuffer = lines.pop();
+			const stdoutRl = readline.createInterface({ input: daemon._child.stdout });
 
-				for (const line of lines) {
-					if (!line) continue;
-					try {
-						const message = JSON.parse(line);
+			stdoutRl.on("line", (line) => {
+				if (!line) return;
+				try {
+					const message = JSON.parse(line);
 
-						const type = message.type;
+					const type = message.type;
 
-						delete message.type;
+					delete message.type;
 
-						daemon._events.emit(type, message);
+					daemon._events.emit(type, message);
 
-						if (type === "command_end") {
-							daemon._running = false;
-							daemon._sendCommand();
-						}
-					} catch(e) {
-						daemon._events.emit("line", {
-							line,
-							source: "stdout"
-						});
+					if (type === "command_end") {
+						daemon._running = false;
+						daemon._sendCommand();
 					}
-				}
-
-				// Check if remaining buffer contains a complete JSON message
-				// (command_end may arrive without a trailing newline)
-				if (stdoutBuffer) {
-					try {
-						const message = JSON.parse(stdoutBuffer.trim());
-
-						const type = message.type;
-
-						delete message.type;
-
-						daemon._events.emit(type, message);
-						stdoutBuffer = "";
-
-						if (type === "command_end") {
-							daemon._running = false;
-							daemon._sendCommand();
-						}
-					} catch(e) {
-						// Not valid JSON yet, leave in buffer
-					}
+				} catch(e) {
+					daemon._events.emit("line", {
+						line,
+						source: "stdout"
+					});
 				}
 			});
 
