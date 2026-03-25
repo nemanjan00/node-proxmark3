@@ -5,7 +5,7 @@ local cmds = require('commands')
 local command
 local decoded_command
 
-io.write('{"type":"started"}')
+io.write('{"type":"started"}\n')
 
 repeat
 	io.flush()
@@ -19,7 +19,7 @@ repeat
 
 		response.type = "command_end"
 
-		io.write(json.encode(response))
+		io.write(json.encode(response) .. "\n")
 		io.flush()
 	end
 until command['type'] == 'exit'
