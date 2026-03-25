@@ -97,6 +97,28 @@ module.exports.createDaemon = (...args) => {
 						});
 					}
 				}
+
+				// Check if remaining buffer contains a complete JSON message
+				// (command_end may arrive without a trailing newline)
+				if (stdoutBuffer) {
+					try {
+						const message = JSON.parse(stdoutBuffer.trim());
+
+						const type = message.type;
+
+						delete message.type;
+
+						daemon._events.emit(type, message);
+						stdoutBuffer = "";
+
+						if (type === "command_end") {
+							daemon._running = false;
+							daemon._sendCommand();
+						}
+					} catch(e) {
+						// Not valid JSON yet, leave in buffer
+					}
+				}
 			});
 
 			daemon._child.on("exit", (code, signal) => {
