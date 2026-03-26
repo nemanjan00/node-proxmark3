@@ -4,16 +4,19 @@ const events = require("events");
 const readline = require("readline");
 const fs = require("fs");
 
+const DEBUG = !!process.env.PM3_DEBUG;
 const LOG_FILE = "/tmp/pm3-daemon.log";
 
 function log(msg) {
+	if (!DEBUG) return;
 	const ts = new Date().toISOString();
 	fs.appendFileSync(LOG_FILE, `[${ts}] ${msg}\n`);
 }
 
 module.exports.createDaemon = (...args) => {
-	// Clear log on new daemon creation
-	fs.writeFileSync(LOG_FILE, `=== PM3 daemon started at ${new Date().toISOString()} ===\n`);
+	if (DEBUG) {
+		fs.writeFileSync(LOG_FILE, `=== PM3 daemon started at ${new Date().toISOString()} ===\n`);
+	}
 
 	const daemon = {
 		_child: undefined,
@@ -86,12 +89,13 @@ module.exports.createDaemon = (...args) => {
 				});
 			});
 
-			// Log raw stdout chunks before readline consumes them
-			daemon._child.stdout.on("data", (data) => {
-				const raw = data.toString();
-				const escaped = raw.replace(/\r/g, "\\r").replace(/\n/g, "\\n");
-				log("RAW STDOUT [" + raw.length + "]: " + escaped.substring(0, 300));
-			});
+			if (DEBUG) {
+				daemon._child.stdout.on("data", (data) => {
+					const raw = data.toString();
+					const escaped = raw.replace(/\r/g, "\\r").replace(/\n/g, "\\n");
+					log("RAW STDOUT [" + raw.length + "]: " + escaped.substring(0, 300));
+				});
+			}
 
 			const stdoutRl = readline.createInterface({ input: daemon._child.stdout });
 
