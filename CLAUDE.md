@@ -234,4 +234,5 @@ yarn publish
 
 ## Environment
 
-- `PM3` — Path to proxmark3 binary (required for MCP server)
+- `PM3` — Path to proxmark3 binary (required for MCP server and TUI)
+- `PM3_DEBUG` — Set to `1` to enable daemon debug logging to `/tmp/pm3-daemon.log`. Logs raw stdout chunks, readline events, JSON parsing, command queue state, and child process lifecycle. Useful for diagnosing command hangs.
